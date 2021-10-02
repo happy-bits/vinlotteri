@@ -105,7 +105,12 @@
                 max: { x: wall.width + lookOffset, y: wall.height + lookOffset }
             });
             
-            //Runner.run(runner, engine);
+            document.body.onclick = () => {
+                
+                Runner.run(runner, engine);
+
+            }
+
         };
         
         Example.sprites()
