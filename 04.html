@@ -18,13 +18,13 @@
         Example.sprites = function () {
 
             function createBoll(name) {
-                const t = wall.thickness/2
+                const t = wall.diameter / 2
 
-                const r = Math.random()*wall.radius-wall.thickness-boll.radius;
-                const angle = Math.random()*Math.PI*2;
+                const r = Math.random() * wall.radius - boll.radius;
+                const angle = Math.random() * Math.PI * 2;
 
-                const x = r*Math.cos(angle) + wall.radius
-                const y = r*Math.sin(angle) + wall.radius
+                const x = r * Math.cos(angle) + wall.radius
+                const y = r * Math.sin(angle) + wall.radius
 
                 return Bodies.circle(x, y, 98 / 2, {
                     density: 0.0005,
@@ -40,21 +40,48 @@
             }
 
             function createWallOfCircles() {
-                
-                const vDiff = Math.PI/60;
+
+                const vDiff = Math.PI / 60;
                 const options = { isStatic: true };
                 const circles = []
-                for(let v=0; v<Math.PI*2; v+=vDiff) {
-
-                    circles.push(Bodies.circle(Math.cos(v)*wall.radius+wall.radius, Math.sin(v)*wall.radius+wall.radius, wall.thickness/2, options))
+                for (let v = 0; v < Math.PI * 2; v += vDiff) {
+                    let x = Math.cos(v) * wall.radius + wall.radius
+                    let y = Math.sin(v) * wall.radius + wall.radius
+                    circles.push(Bodies.circle(x, y, wall.thickness, options))
                 }
-                return circles                
+                return circles
 
             }
-            // De yttre måtten
+
+            function moveMixer() {
+
+                const position = {
+                    x: mixer.position.x,
+                    y: mixer.position.y
+                }
+
+                const force = {
+                    x: Math.random()*2-1,
+                    y: Math.random()*2-1
+                }
+                Matter.Body.applyForce(mixer, position, force)
+
+                // const v = time/10.0*Math.PI*2
+                // const r = wall.radius - wall.thickness - boll.radius - mixerRadius
+                // let x = r * Math.cos(v)+wall.radius
+                // let y = r * Math.sin(v)+wall.radius
+
+                // console.log(x, y)
+
+                // Matter.Body.translate(mixer, {x:x, y:y})
+
+            }
 
             const boll = { diameter: 98, radius: 49 }
-            const wall = { thickness: 20, diameter:800, radius:400 }
+            const wall = { thickness: 20, diameter: 800, radius: 400 }
+            const mixerRadius = 98 / 2
+
+            let time = 0
 
             // Kortare alias
 
@@ -78,7 +105,7 @@
                 engine: engine,
                 options: {
                     width: wall.diameter,
-                    height: wall.diameter+500,
+                    height: wall.diameter + 500,
                     showAngleIndicator: false,
                     wireframes: false
                 }
@@ -87,42 +114,60 @@
             Render.run(render);
 
             const runner = Runner.create();
-            
+
             // Static = påverkas inte av tyngdkraften (kan ej ändra position eller angle)
             // Properties för ett objekt https://brm.io/matter-js/docs/classes/Body.html#properties
 
-            
-            
             world.bodies = [];
-            
+
             Composite.add(world, createWallOfCircles());
-            
+
             // Lägg till bollar till världen
-            
+
             for (let i = 0; i < 20; i++) {
-                
+
                 const x1 = createBoll('oscar')
                 const x2 = createBoll('nils')
                 Composite.add(world, [x1, x2]);
             }
-            
+
+            const mixer = Bodies.circle(wall.radius, wall.radius, mixerRadius, {
+                density: 0.005,  // hög densitet => pressas
+                frictionAir: 0.06,
+                restitution: 0.3, // 0 => 1. Elastisitet. 0 = ingen studs
+                friction: 0.01,   // 0 => 1. O = kan glida länge. 1 = stannar direkt
+                render: {
+                    sprite: {
+                        texture: `./dearfriends/madde.png`
+                    }
+                }
+            });
+
+            Composite.add(world, mixer)
             // Låt "viewport" vara något större än scenen
-            
+
             const lookOffset = 100
-            
+
             Render.lookAt(render, {
                 min: { x: 0 - lookOffset, y: 0 - lookOffset },
                 max: { x: wall.diameter + lookOffset, y: wall.diameter + lookOffset }
             });
-            
-            document.body.onclick = () => {
-                
-                Runner.run(runner, engine);
 
+            document.body.onclick = () => {
+
+                // Matter.Body.setStatic(mixer, true)
+
+
+                Runner.run(runner, engine);
+                setInterval(() => {
+                    time++
+                    moveMixer()
+
+                }, 100)
             }
 
         };
-        
+
         Example.sprites()
 
     </script>
