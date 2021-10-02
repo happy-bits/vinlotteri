@@ -80,9 +80,12 @@
             Composite.add(world, [
                 
                 // centerX, centerY, width, height
+
+                // Horisontella
                 Bodies.rectangle(wall.width / 2, 0, wall.width, wall.thickness, options),
                 Bodies.rectangle(wall.width / 2, wall.height, wall.width, wall.thickness, options),
                 
+                // Vertikala
                 Bodies.rectangle(0, wall.height / 2, wall.thickness, wall.height, options),
                 Bodies.rectangle(wall.width, wall.height / 2, wall.thickness, wall.height, options),
             ]);

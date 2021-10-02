@@ -19,8 +19,8 @@
 
             function createBoll(name) {
                 const t = wall.thickness/2
-                const x = Common.random(boll.radius + t, wall.width - boll.radius - t)
-                const y = Common.random(boll.radius + t, wall.height - boll.radius - t)
+                const x = Common.random(boll.radius + t, wall.diameter - boll.radius - t)
+                const y = Common.random(boll.radius + t, wall.diameter - boll.radius - t)
                 return Bodies.circle(x, y, 98 / 2, {
                     density: 0.0005,
                     frictionAir: 0.06,
@@ -34,10 +34,22 @@
                 });
             }
 
+            function createWallOfCircles() {
+                
+                const vDiff = Math.PI/60;
+                const options = { isStatic: true };
+                const circles = []
+                for(let v=0; v<Math.PI*2; v+=vDiff) {
+
+                    circles.push(Bodies.circle(Math.cos(v)*wall.radius+wall.radius, Math.sin(v)*wall.radius+wall.radius, wall.thickness/2, options))
+                }
+                return circles                
+
+            }
             // De yttre måtten
 
             const boll = { diameter: 98, radius: 49 }
-            const wall = { thickness: 30, width:800, height:1200 }
+            const wall = { thickness: 20, diameter:800, radius:400 }
 
             // Kortare alias
 
@@ -60,8 +72,8 @@
                 element: document.body,
                 engine: engine,
                 options: {
-                    width: wall.width,
-                    height: wall.height,
+                    width: wall.diameter,
+                    height: wall.diameter+500,
                     showAngleIndicator: false,
                     wireframes: false
                 }
@@ -71,21 +83,14 @@
 
             const runner = Runner.create();
             
-            // Lägg till fyra fasta vägger till världen
+            // Static = påverkas inte av tyngdkraften (kan ej ändra position eller angle)
+            // Properties för ett objekt https://brm.io/matter-js/docs/classes/Body.html#properties
+
             
-            const options = { isStatic: true };
             
             world.bodies = [];
             
-            Composite.add(world, [
-                
-                // centerX, centerY, width, height
-                Bodies.rectangle(wall.width / 2, 0, wall.width, wall.thickness, options),
-                Bodies.rectangle(wall.width / 2, wall.height, wall.width, wall.thickness, options),
-                
-                Bodies.rectangle(0, wall.height / 2, wall.thickness, wall.height, options),
-                Bodies.rectangle(wall.width, wall.height / 2, wall.thickness, wall.height, options),
-            ]);
+            Composite.add(world, createWallOfCircles());
             
             // Lägg till bollar till världen
             
@@ -102,7 +107,7 @@
             
             Render.lookAt(render, {
                 min: { x: 0 - lookOffset, y: 0 - lookOffset },
-                max: { x: wall.width + lookOffset, y: wall.height + lookOffset }
+                max: { x: wall.diameter + lookOffset, y: wall.diameter + lookOffset }
             });
             
             document.body.onclick = () => {
