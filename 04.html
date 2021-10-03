@@ -17,6 +17,9 @@
 
         Example.sprites = function () {
 
+            let gameState = "click-to-start"
+
+
             function createBoll(name) {
                 const t = wall.diameter / 2
 
@@ -36,7 +39,9 @@
                             texture: `./dearfriends/${name}.png`
                         }
                     },
-                    who:name // extra parameter
+                    extra: {
+                        who:name // extra parameter
+                    }
                 });
             }
 
@@ -119,26 +124,27 @@
             }
             Composite.add(world, bollar);
 
-            const mixerBall = Bodies.circle(wall.diameter - 150, wall.radius, mixer.radius, {
-                density: 0.005,  // hög densitet => pressas
-                frictionAir: 0.06,
-                restitution: 0.3, // 0 => 1. Elastisitet. 0 = ingen studs
-                friction: 0.01,   // 0 => 1. O = kan glida länge. 1 = stannar direkt
+            const mixerBall = Bodies.circle(wall.radius, wall.radius, mixer.radius, {
+                density: 0.015,  // hög densitet => pressas
+                frictionAir: 0.02,
+                restitution: 0.8, // 0 => 1. Elastisitet. 0 = ingen studs
+                friction: 0.02,   // 0 => 1. O = kan glida länge. 1 = stannar direkt
                 render: {
                     sprite: {
-                        //texture: `./dearfriends/drunk-172-200.png`
+                        // texture: `./dearfriends/drunk-172-200.png`
+                        texture: `./dearfriends/drunk-172-200-transparent.png`
                         //texture: `./dearfriends/wineguy.png`,
                         //texture: `./dearfriends/gerard1.png`,
                         //texture: `./dearfriends/gerard1b.png`,
                         //texture: `./dearfriends/gerard2.png`,
-                        texture: `./dearfriends/gerard3.png`,
+                        //texture: `./dearfriends/gerard3.png`,
                     }
                 },
                 extra: {
-                    //noseDefaultAngle: 2.8 // drunk
+                    noseDefaultAngle: 2.8 // drunk
                     //noseDefaultAngle: 0, // wineguy
                     //noseDefaultAngle: 0.3 // gerard2
-                    noseDefaultAngle: -0.2 // gerard4
+                    //noseDefaultAngle: -0.2 // gerard4
                 }
             });
 
@@ -157,7 +163,7 @@
             // Body.setStatic(nose, true)
             Matter.Sleeping.set(nose, true)
             
-            Composite.add(world, nose)   // Kommentera för att gömma näsan
+            //Composite.add(world, nose)   // Kommentera för att gömma näsan
 
             
             setViewport()
@@ -200,7 +206,7 @@
             }
 
             function moveAgainstWall() {
-                const force = 6 / onePlus 
+                const force = 16 / onePlus 
 
                 moveMixer(
                     wall.radius * Math.cos(mixer.angle) + wall.radius,
@@ -211,7 +217,7 @@
 
             function rotateMixer() {
                 const t = time / 1000
-                const rotation = 1.6 / (1 + t * t)
+                const rotation = 1.6 / onePlus
                 Body.rotate(mixerBall, rotation)
             }
 
@@ -252,6 +258,13 @@
                 checkWinner()
             }
 
+            function checkIfSomeHasWon() {
+
+                if (time >= 30000){
+                    alert(closesedBall.extra.who)
+                    gameState="player-has-won"
+                }
+            }
             document.body.onclick = () => {
 
                 /////console.log("time", time)
@@ -266,11 +279,18 @@
 
                 setInterval(() => {
 
+                    if (gameState==="player-has-won") {
+                        Runner.stop(runner, engine)
+                        return
+                    }
                     mixer.angle += 0.6 / onePlus
                     positionNose()                  
 
                     moveAgainstWall()
                     checkWhoIsClosesedToNose()
+                    checkIfSomeHasWon()
+                    console.log(time)
+
                 }, 100)
 
             }
