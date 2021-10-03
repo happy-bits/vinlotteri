@@ -35,7 +35,8 @@
                         sprite: {
                             texture: `./dearfriends/${name}.png`
                         }
-                    }
+                    },
+                    who:name // extra parameter
                 });
             }
 
@@ -84,8 +85,8 @@
                 element: document.body,
                 engine: engine,
                 options: {
-                    width: wall.diameter,
-                    height: wall.diameter + 500,
+                    width: wall.diameter*1.5,
+                    height: wall.diameter*1.5,
                     showAngleIndicator: false,
                     wireframes: false
                 }
@@ -104,14 +105,19 @@
 
             // Lägg till bollar till världen
 
-            for (let i = 0; i < 7; i++) {
+            const bollar = []
 
-                const x1 = createBoll('oscar')
-                const x2 = createBoll('nils')
-                const x3 = createBoll('macke')
-                const x4 = createBoll('madde')
-                Composite.add(world, [x1, x2, x3, x4]);
+            //bollar.push(createBoll('oscar'))
+
+
+            for (let i = 0; i < 7; i++) {
+                bollar.push(createBoll('oscar'))
+                bollar.push(createBoll('nils'))
+                bollar.push(createBoll('macke'))
+                bollar.push(createBoll('madde'))
+    
             }
+            Composite.add(world, bollar);
 
             const mixerBall = Bodies.circle(wall.diameter - 150, wall.radius, mixer.radius, {
                 density: 0.005,  // hög densitet => pressas
@@ -132,13 +138,15 @@
                 frictionAir: 0.06,
                 restitution: 0.3, 
                 friction: 0.01,  
+                opacity:0 
             });
 
             positionNose()
 
             // Body.setStatic(nose, true)
             Matter.Sleeping.set(nose, true)
-            Composite.add(world, nose)
+            
+            // Composite.add(world, nose)   // Näsan är gömd
 
             
             setViewport()
@@ -154,10 +162,10 @@
             
             function setViewport() {
                 
-                const lookOffset = 100
+                const offset = 100
                 Render.lookAt(render, {
-                    min: { x: 0 - lookOffset, y: 0 - lookOffset },
-                    max: { x: wall.diameter + lookOffset, y: wall.diameter + lookOffset }
+                    min: { x: -offset, y: -offset},
+                    max: { x: wall.diameter+offset, y: wall.diameter+offset}
                 });
                 
             }
@@ -181,7 +189,7 @@
             }
 
             function moveAgainstWall() {
-                const force = 6 / onePlus
+                const force = 6 / onePlus 
 
                 moveMixer(
                     wall.radius * Math.cos(mixer.angle) + wall.radius,
@@ -196,12 +204,46 @@
                 Body.rotate(mixerBall, rotation)
             }
 
+            let closesedBall=null
 
+            function checkWhoIsClosesedToNose(){
+                let closesedDistance = 10000000000
+                
+
+                for(let b of bollar) {
+                    const noseBallVector = Vector.create(
+                        nose.position.x - b.position.x,
+                        nose.position.y - b.position.y
+                    )
+                    const length = Vector.magnitude(noseBallVector)
+
+                    if (closesedBall == null || length < closesedDistance){
+                        closesedDistance = length
+                        closesedBall = b
+                    }
+
+                    // Släck de som är nära näsan
+                    // if (length < boll.radius + 10) {
+                    //     b.render.opacity = 0.3
+                    // }
+                    b.render.opacity = 0.5
+                }
+
+                closesedBall.render.opacity = 1
+            }
+
+            function checkWinner() {
+                console.log(closesedBall.who)
+            }
             let onePlus
+
+            document.body.onkeyup = () => {
+                checkWinner()
+            }
 
             document.body.onclick = () => {
 
-                console.log("time", time)
+                /////console.log("time", time)
 
                 Runner.run(runner, engine);
 
@@ -214,10 +256,10 @@
                 setInterval(() => {
 
                     mixer.angle += 0.6 / onePlus
-                    positionNose()
-                    
+                    positionNose()                  
 
                     moveAgainstWall()
+                    checkWhoIsClosesedToNose()
                 }, 100)
 
             }
