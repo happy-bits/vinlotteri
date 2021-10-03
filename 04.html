@@ -44,9 +44,9 @@
                 const vDiff = Math.PI / 60;
                 const options = { isStatic: true };
                 const circles = []
-                
+
                 for (let v = 0; v < Math.PI * 2; v += vDiff) {
-                    
+
                     // const threeQuater = 3/4*2*Math.PI
                     // if (v>=threeQuater-1 &&v <threeQuater+1 ){
                     //     continue
@@ -60,36 +60,10 @@
 
             }
 
-            function moveMixer() {
-
-                const position = {
-                    x: mixer.position.x,
-                    y: mixer.position.y
-                }
-
-                const force = {
-                    x: Math.random()*2-1,
-                    y: Math.random()*2-1
-                }
-
-                console.log(mixer.position.x)
-
-                Matter.Body.applyForce(mixer, position, force)
-
-                // const v = time/10.0*Math.PI*2
-                // const r = wall.radius - wall.thickness - boll.radius - wall.diameter
-                // let x = r * Math.cos(v)+wall.radius
-                // let y = r * Math.sin(v)+wall.radius
-
-                // console.log(x, y)
-
-                // Matter.Body.translate(mixer, {x:x, y:y})
-
-            }
 
             const boll = { diameter: 98, radius: 49 }
             const wall = { thickness: 20, diameter: 800, radius: 400 }
-            const mixer = { diameter: 172, radius: 172/2}
+            const mixer = { diameter: 172, radius: 172 / 2, angle:0 }
             let time = 0
 
             // Kortare alias
@@ -102,7 +76,8 @@
                 MouseConstraint = Matter.MouseConstraint,
                 Mouse = Matter.Mouse,
                 Composite = Matter.Composite,
-                Bodies = Matter.Bodies;
+                Bodies = Matter.Bodies,
+                Vector = Matter.Vector;
 
             // Setup av engine, värld, rendering, runner
 
@@ -139,10 +114,10 @@
                 const x2 = createBoll('nils')
                 const x3 = createBoll('macke')
                 const x4 = createBoll('madde')
-               /////////// Composite.add(world, [x1, x2, x3, x4]);
+                /////////// Composite.add(world, [x1, x2, x3, x4]);
             }
 
-            const m1 = Bodies.circle(wall.radius, 120, mixer.radius, {
+            const mixerBall = Bodies.circle(wall.diameter - 150, wall.radius, mixer.radius, {
                 density: 0.005,  // hög densitet => pressas
                 frictionAir: 0.06,
                 restitution: 0.3, // 0 => 1. Elastisitet. 0 = ingen studs
@@ -151,10 +126,10 @@
                     sprite: {
                         texture: `./dearfriends/drunk-172-200.png`
                     }
-                }               
+                }
             });
 
-            Composite.add(world, m1)
+            Composite.add(world, mixerBall)
             // Låt "viewport" vara något större än scenen
 
             const lookOffset = 100
@@ -164,17 +139,95 @@
                 max: { x: wall.diameter + lookOffset, y: wall.diameter + lookOffset }
             });
 
+
+            function moveMixer(endX, endY, force) {
+
+                console.log(endX, endY)
+
+                const position = {
+                    x: mixerBall.position.x,
+                    y: mixerBall.position.y
+                }
+
+                
+                let forceVector = Vector.create(endX - position.x, endY - position.y)
+
+                forceVector = Vector.normalise(forceVector)
+
+                forceVector = Vector.mult(forceVector, force)
+
+                Matter.Body.applyForce(mixerBall, position, forceVector)
+
+            }
+
+            function moveAgainstWall() {
+                moveMixer(
+                    wall.radius * Math.cos(mixer.angle) + wall.radius,
+                    wall.radius * Math.sin(mixer.angle) + wall.radius,
+                    1
+                )
+            }
+
+
+            // function moveMixerSouth() {
+
+            //     moveMixer(wall.radius, wall.diameter, 3)
+
+            // }
+
+            // function moveMixerWest() {
+
+            //     moveMixer(0, wall.radius, 3)
+
+            // }
+
+            // function moveMixerNorth() {
+
+            //     moveMixer(wall.radius, 0, 6)
+
+            // }
+
+            // function moveMixerEast() {
+
+            //     moveMixer(wall.diameter, wall.radius, 3)
+
+            // }
+
             document.body.onclick = () => {
 
                 // Matter.Body.setStatic(mixer, true)
 
+                console.log("time", time)
 
                 Runner.run(runner, engine);
-                // setInterval(() => {
-                //     time++
-                //     moveMixer()
 
-                // }, 100)
+                setInterval(() => {
+                    time +=100
+                    mixer.angle += 0.9
+                }, 300)
+
+                setInterval(() => {
+
+                    moveAgainstWall()
+                }, 100)
+
+                // setTimeout(() => {
+                //     moveMixerSouth()
+                // }, 300)
+
+                // setTimeout(() => {
+                //     moveMixerWest()
+                // }, 900)
+
+                // setTimeout(() => {
+                //     moveMixerNorth()
+                // }, 1600)
+
+                // setTimeout(() => {
+                //     moveMixerEast()
+                // }, 2600)
+
+                // 3300
             }
 
         };
