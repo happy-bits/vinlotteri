@@ -126,8 +126,19 @@
                 friction: 0.01,   // 0 => 1. O = kan glida länge. 1 = stannar direkt
                 render: {
                     sprite: {
-                        texture: `./dearfriends/drunk-172-200.png`
+                        //texture: `./dearfriends/drunk-172-200.png`
+                        //texture: `./dearfriends/wineguy.png`,
+                        //texture: `./dearfriends/gerard1.png`,
+                        //texture: `./dearfriends/gerard1b.png`,
+                        //texture: `./dearfriends/gerard2.png`,
+                        texture: `./dearfriends/gerard3.png`,
                     }
+                },
+                extra: {
+                    //noseDefaultAngle: 2.8 // drunk
+                    //noseDefaultAngle: 0, // wineguy
+                    //noseDefaultAngle: 0.3 // gerard2
+                    noseDefaultAngle: -0.2 // gerard4
                 }
             });
 
@@ -146,7 +157,7 @@
             // Body.setStatic(nose, true)
             Matter.Sleeping.set(nose, true)
             
-            // Composite.add(world, nose)   // Näsan är gömd
+            Composite.add(world, nose)   // Kommentera för att gömma näsan
 
             
             setViewport()
@@ -154,7 +165,7 @@
             function positionNose() {
                 let noseVector = Vector.create( mixer.radius, 0)
 
-                noseVector = Vector.rotate(noseVector, mixerBall.angle + 2.8)               
+                noseVector = Vector.rotate(noseVector, mixerBall.angle + mixerBall.extra.noseDefaultAngle)               
 
                 nose.position.x = mixerBall.position.x + noseVector.x
                 nose.position.y = mixerBall.position.y + noseVector.y
