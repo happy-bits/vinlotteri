@@ -1,4 +1,3 @@
-// todo: Start-bild-skärm
 // todo: Bakgrundsbild för spelet
 // todo: I URL'en kunna ange spelarna och hur många av varje
 // todo: Ringa in vinnaren
@@ -7,8 +6,23 @@
 
 const Vinlotteri = function () {
 
-    let gameState = "click-to-start"
+    let gameState = "start-screen"
     const themeRoot = "./theme/boring/"
+    const backgroundRoot = themeRoot + "background/"
+
+    addStylesheet(themeRoot + "style.css")
+
+    function addStylesheet(fileName) {
+
+        var head = document.head;
+        var link = document.createElement("link");
+
+        link.type = "text/css";
+        link.rel = "stylesheet";
+        link.href = fileName;
+
+        head.appendChild(link);
+    }
 
     function createBoll(name) {
         const t = wall.diameter / 2
@@ -38,7 +52,16 @@ const Vinlotteri = function () {
     function createWallOfCircles() {
 
         const vDiff = Math.PI / 60;
-        const options = { isStatic: true };
+        const options = { 
+            isStatic: true,
+            render:{
+                fillStyle: 'transparent',
+                strokeStyle: 'transparent',
+                lineWidth: 3,
+    
+            }    
+        
+        };
         const circles = []
 
         for (let v = 0; v < Math.PI * 2; v += vDiff) {
@@ -91,57 +114,61 @@ const Vinlotteri = function () {
 
     const runner = Runner.create();
 
-    // Static = påverkas inte av tyngdkraften (kan ej ändra position eller angle)
-    // Properties för ett objekt https://brm.io/matter-js/docs/classes/Body.html#properties
+    setupWallOfCircles()
 
-    world.bodies = [];
-
-    Composite.add(world, createWallOfCircles());
-
-    // Lägg till bollar till världen
-
-    const bollar = []
-
-    //bollar.push(createBoll('oscar'))
-
-
-    for (let i = 0; i < 7; i++) {
-        bollar.push(createBoll('oscar'))
-        bollar.push(createBoll('nils'))
-        bollar.push(createBoll('macke'))
-        bollar.push(createBoll('madde'))
-
+    function setupWallOfCircles() {
+        world.bodies = [];
+        Composite.add(world, createWallOfCircles());
     }
-    Composite.add(world, bollar);
 
-    const mixerBall = Bodies.circle(wall.radius, wall.radius, mixer.radius, {
-        density: 0.015,  // hög densitet => pressas
-        frictionAir: 0.02,
-        restitution: 0.8, // 0 => 1. Elastisitet. 0 = ingen studs
-        friction: 0.02,   // 0 => 1. O = kan glida länge. 1 = stannar direkt
-        render: {
-            sprite: {
-                texture: `${themeRoot}mixer.png`
-            }
-        },
-        extra: {
-            noseDefaultAngle: 2.8 // drunk
-        }
-    });
-
-    Composite.add(world, mixerBall)
-
-    const nose = Bodies.circle(mixerBall.position.x, mixerBall.position.y, 10, {
-        density: 0.000,
-        frictionAir: 0.06,
-        restitution: 0.3,
-        friction: 0.01,
-        opacity: 0
-    });
+    const { bollar, mixerBall, nose } = setupBalls()
 
     positionNose()
 
-    // Body.setStatic(nose, true)
+    function setupBalls() {
+
+        const bollar = []
+
+        for (let i = 0; i < 7; i++) {
+            bollar.push(createBoll('oscar'))
+            bollar.push(createBoll('nils'))
+            bollar.push(createBoll('macke'))
+            bollar.push(createBoll('madde'))
+
+        }
+        Composite.add(world, bollar);
+
+        const mixerBall = Bodies.circle(wall.radius, wall.radius, mixer.radius, {
+            density: 0.015,  // hög densitet => pressas
+            frictionAir: 0.02,
+            restitution: 0.8, // 0 => 1. Elastisitet. 0 = ingen studs
+            friction: 0.02,   // 0 => 1. O = kan glida länge. 1 = stannar direkt
+            render: {
+                sprite: {
+                    texture: `${themeRoot}mixer.png`
+                }
+            },
+            extra: {
+                noseDefaultAngle: 2.8 // drunk
+            }
+        });
+
+        Composite.add(world, mixerBall)
+
+        const nose = Bodies.circle(mixerBall.position.x, mixerBall.position.y, 10, {
+            density: 0.000,
+            frictionAir: 0.06,
+            restitution: 0.3,
+            friction: 0.01,
+            opacity: 0
+        });
+
+
+
+        return { bollar, mixerBall, nose }
+    }
+
+
     Matter.Sleeping.set(nose, true)
 
     //Composite.add(world, nose)   // Kommentera för att gömma näsan
@@ -232,6 +259,7 @@ const Vinlotteri = function () {
     function checkWinner() {
         console.log(closesedBall.who)
     }
+
     let onePlus
 
     document.body.onkeyup = () => {
@@ -245,35 +273,54 @@ const Vinlotteri = function () {
             gameState = "player-has-won"
         }
     }
-    document.body.onclick = () => {
 
-        /////console.log("time", time)
-
-        Runner.run(runner, engine);
-
-        setInterval(() => {
-            time += 100
-            onePlus = 1 + Math.pow(time / 6000, 2)
-
-        }, 100)
-
-        setInterval(() => {
-
-            if (gameState === "player-has-won") {
-                Runner.stop(runner, engine)
-                return
-            }
-            mixer.angle += 0.6 / onePlus
-            positionNose()
-
-            moveAgainstWall()
-            checkWhoIsClosesedToNose()
-            checkIfSomeHasWon()
-            console.log(time)
-
-        }, 100)
-
+    function changeBackground(filename, opacity){
+        document.getElementById("background").src = backgroundRoot+filename
+        document.getElementById("background").style.opacity = opacity
     }
+
+    function showStartScreen() {
+
+        changeBackground("start.png", 1)
+
+        document.body.onclick = () => {
+
+            console.log('Click')
+            document.body.onclick = null
+
+            changeBackground("game.png", 0.3)
+            
+            Runner.run(runner, engine);
+            gameState = "playing"
+        }
+    }
+
+    setInterval(() => {
+
+        switch (gameState) {
+            case "start-screen":
+                showStartScreen();
+                break;
+
+            case "playing":
+                time += 100
+                onePlus = 1 + Math.pow(time / 6000, 2)
+                mixer.angle += 0.6 / onePlus
+                positionNose()
+    
+                moveAgainstWall()
+                checkWhoIsClosesedToNose()
+                checkIfSomeHasWon()
+                console.log(time)                
+                break;
+
+            case "player-has-won":
+                Runner.stop(runner, engine)
+                return                
+        }
+
+    }, 100)
+
 
 };
 
