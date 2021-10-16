@@ -1,4 +1,3 @@
-// todo: Bakgrundsbild för spelet
 // todo: I URL'en kunna ange spelarna och hur många av varje
 // todo: Ringa in vinnaren
 // todo: Ljudeffekt när någon skjuts ut eller vinner
@@ -106,7 +105,8 @@ const Vinlotteri = function () {
             width: wall.diameter * 1.5,
             height: wall.diameter * 1.5,
             showAngleIndicator: false,
-            wireframes: false
+            wireframes: false,
+            background:'#ffffff'
         }
     });
 
