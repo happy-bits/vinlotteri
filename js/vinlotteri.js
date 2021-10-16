@@ -1,4 +1,3 @@
-// todo: Skapa en theme-mapp
 // todo: Start-bild-skärm
 // todo: Bakgrundsbild för spelet
 // todo: I URL'en kunna ange spelarna och hur många av varje
@@ -9,6 +8,7 @@
 const Vinlotteri = function () {
 
     let gameState = "click-to-start"
+    const themeRoot = "./theme/boring/"
 
     function createBoll(name) {
         const t = wall.diameter / 2
@@ -26,7 +26,7 @@ const Vinlotteri = function () {
             friction: 0.01,
             render: {
                 sprite: {
-                    texture: `./dearfriends/${name}.png`
+                    texture: `${themeRoot}${name}.png`
                 }
             },
             extra: {
@@ -121,20 +121,11 @@ const Vinlotteri = function () {
         friction: 0.02,   // 0 => 1. O = kan glida länge. 1 = stannar direkt
         render: {
             sprite: {
-                // texture: `./dearfriends/drunk-172-200.png`
-                texture: `./dearfriends/drunk-172-200-transparent.png`
-                //texture: `./dearfriends/wineguy.png`,
-                //texture: `./dearfriends/gerard1.png`,
-                //texture: `./dearfriends/gerard1b.png`,
-                //texture: `./dearfriends/gerard2.png`,
-                //texture: `./dearfriends/gerard3.png`,
+                texture: `${themeRoot}mixer.png`
             }
         },
         extra: {
             noseDefaultAngle: 2.8 // drunk
-            //noseDefaultAngle: 0, // wineguy
-            //noseDefaultAngle: 0.3 // gerard2
-            //noseDefaultAngle: -0.2 // gerard4
         }
     });
 
@@ -154,7 +145,6 @@ const Vinlotteri = function () {
     Matter.Sleeping.set(nose, true)
 
     //Composite.add(world, nose)   // Kommentera för att gömma näsan
-
 
     setViewport()
 
