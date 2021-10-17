@@ -1,7 +1,8 @@
-// todo: I URL'en kunna ange spelarna och hur många av varje
 // todo: Ringa in vinnaren
 // todo: Ljudeffekt när någon skjuts ut eller vinner
 // todo: Musik vid introskärmen
+
+// http://127.0.0.1:5500/index.html?oscar=1&nils=2&macke=3&madde=4
 
 const Vinlotteri = function () {
 
@@ -25,6 +26,7 @@ const Vinlotteri = function () {
     const boll = { diameter: 98, radius: 49 }
     const wall = { thickness: 20, diameter: 800, radius: 400 }
     const mixer = { diameter: 172, radius: 172 / 2, angle: 0 }
+    const players = new Set(["oscar", "nils", "macke", "madde"])
 
     let gameState = "start-screen"
     let time = 0
@@ -41,7 +43,8 @@ const Vinlotteri = function () {
 
     Matter.Sleeping.set(nose, true)
 
-    Composite.add(world, nose)   // Kommentera för att gömma näsan    
+    noseShouldBeVisible(false)
+ 
 
     setViewport()
 
@@ -55,8 +58,8 @@ const Vinlotteri = function () {
             case "playing":
                 time += 100
                 onePlus = 1 + Math.pow(time / 6000, 2)
-                console.log(onePlus)
                 mixer.angle += 0.6 / onePlus
+
                 positionNose()
                 moveAgainstWall()
                 checkWhoIsClosesedToNose()
@@ -70,6 +73,11 @@ const Vinlotteri = function () {
 
     }, 100)
 
+    function noseShouldBeVisible(visible) {
+        if (visible) {
+            Composite.add(world, nose)  
+        }
+    }
     function setupWorld() {
 
         const engine = Engine.create();
@@ -158,17 +166,33 @@ const Vinlotteri = function () {
         Composite.add(world, createWallOfCircles());
     }
 
+    function error(message){
+        alert(message)
+        throw message
+    }
     function setupBalls() {
 
         const bollar = []
 
-        for (let i = 0; i < 7; i++) {
-            bollar.push(createBall('oscar'))
-            bollar.push(createBall('nils'))
-            bollar.push(createBall('macke'))
-            bollar.push(createBall('madde'))
+        try {
+            for (let personAmount of location.search.substr(1).split('&')) {
+                const person = personAmount.split('=')[0]
+                const amount = parseInt(personAmount.split('=')[1])
 
+                if(!players.has(person)) {
+                    error (`Personen '${person}' är okänd för mej`)
+                }
+                if (amount<0) {
+                    error (`Negativt antal för personen ${person}`)
+                }
+                for (let i = 0; i < amount; i++) {
+                    bollar.push(createBall(person))
+                }    
+            }
+        }catch{
+            error("Querysträngen är fel")
         }
+
         Composite.add(world, bollar);
 
         const mixerBall = Bodies.circle(wall.radius, wall.radius, mixer.radius, {
@@ -195,8 +219,6 @@ const Vinlotteri = function () {
             friction: 0.01,
             opacity: 0
         });
-
-
 
         return { bollar, mixerBall, nose }
     }
