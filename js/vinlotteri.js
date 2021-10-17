@@ -5,12 +5,97 @@
 
 const Vinlotteri = function () {
 
+    // Kortare alias
+
+    const Engine = Matter.Engine,
+        Render = Matter.Render,
+        Runner = Matter.Runner,
+        Composites = Matter.Composites,
+        Common = Matter.Common,
+        MouseConstraint = Matter.MouseConstraint,
+        Mouse = Matter.Mouse,
+        Composite = Matter.Composite,
+        Bodies = Matter.Bodies,
+        Vector = Matter.Vector,
+        Body = Matter.Body;
+
     let gameState = "start-screen"
     const themeRoot = "./theme/boring/"
     const backgroundRoot = themeRoot + "background/"
 
+    const boll = { diameter: 98, radius: 49 }
+    const wall = { thickness: 20, diameter: 800, radius: 400 }
+    const mixer = { diameter: 172, radius: 172 / 2, angle: 0 }
+    let time = 0
+
+    // Setup av engine, värld, rendering, runner
+
+    const engine = Engine.create();
+    const world = engine.world;
+
+    const render = Render.create({
+        element: document.body,
+        engine: engine,
+        options: {
+            width: wall.diameter * 1.5,
+            height: wall.diameter * 1.5,
+            showAngleIndicator: false,
+            wireframes: false,
+            background: '#ffffff'
+        }
+    });
+
+    Render.run(render);
+
+    const runner = Runner.create();
+
+    setupWallOfCircles()
+
     addStylesheet(themeRoot + "style.css")
 
+    const { bollar, mixerBall, nose } = setupBalls()
+
+    positionNose()
+
+    Matter.Sleeping.set(nose, true)
+
+    //Composite.add(world, nose)   // Kommentera för att gömma näsan    
+
+    setViewport()
+
+    let closesedBall = null
+
+    let onePlus
+
+    document.body.onkeyup = () => {
+        checkWinner()
+    }
+
+    setInterval(() => {
+
+        switch (gameState) {
+            case "start-screen":
+                showStartScreen();
+                break;
+
+            case "playing":
+                time += 100
+                onePlus = 1 + Math.pow(time / 6000, 2)
+                mixer.angle += 0.6 / onePlus
+                positionNose()
+
+                moveAgainstWall()
+                checkWhoIsClosesedToNose()
+                checkIfSomeHasWon()
+                break;
+
+            case "player-has-won":
+                Runner.stop(runner, engine)
+                return
+        }
+
+    }, 100)
+    
     function addStylesheet(fileName) {
 
         var head = document.head;
@@ -51,15 +136,15 @@ const Vinlotteri = function () {
     function createWallOfCircles() {
 
         const vDiff = Math.PI / 60;
-        const options = { 
+        const options = {
             isStatic: true,
-            render:{
+            render: {
                 fillStyle: 'transparent',
                 strokeStyle: 'transparent',
                 lineWidth: 3,
-    
-            }    
-        
+
+            }
+
         };
         const circles = []
 
@@ -73,57 +158,10 @@ const Vinlotteri = function () {
 
     }
 
-
-    const boll = { diameter: 98, radius: 49 }
-    const wall = { thickness: 20, diameter: 800, radius: 400 }
-    const mixer = { diameter: 172, radius: 172 / 2, angle: 0 }
-    let time = 0
-
-    // Kortare alias
-
-    const Engine = Matter.Engine,
-        Render = Matter.Render,
-        Runner = Matter.Runner,
-        Composites = Matter.Composites,
-        Common = Matter.Common,
-        MouseConstraint = Matter.MouseConstraint,
-        Mouse = Matter.Mouse,
-        Composite = Matter.Composite,
-        Bodies = Matter.Bodies,
-        Vector = Matter.Vector,
-        Body = Matter.Body;
-
-    // Setup av engine, värld, rendering, runner
-
-    const engine = Engine.create();
-    const world = engine.world;
-
-    const render = Render.create({
-        element: document.body,
-        engine: engine,
-        options: {
-            width: wall.diameter * 1.5,
-            height: wall.diameter * 1.5,
-            showAngleIndicator: false,
-            wireframes: false,
-            background:'#ffffff'
-        }
-    });
-
-    Render.run(render);
-
-    const runner = Runner.create();
-
-    setupWallOfCircles()
-
     function setupWallOfCircles() {
         world.bodies = [];
         Composite.add(world, createWallOfCircles());
     }
-
-    const { bollar, mixerBall, nose } = setupBalls()
-
-    positionNose()
 
     function setupBalls() {
 
@@ -167,13 +205,6 @@ const Vinlotteri = function () {
 
         return { bollar, mixerBall, nose }
     }
-
-
-    Matter.Sleeping.set(nose, true)
-
-    //Composite.add(world, nose)   // Kommentera för att gömma näsan
-
-    setViewport()
 
     function positionNose() {
         let noseVector = Vector.create(mixer.radius, 0)
@@ -222,14 +253,6 @@ const Vinlotteri = function () {
         )
     }
 
-    function rotateMixer() {
-        const t = time / 1000
-        const rotation = 1.6 / onePlus
-        Body.rotate(mixerBall, rotation)
-    }
-
-    let closesedBall = null
-
     function checkWhoIsClosesedToNose() {
         let closesedDistance = 10000000000
 
@@ -260,12 +283,6 @@ const Vinlotteri = function () {
         console.log(closesedBall.who)
     }
 
-    let onePlus
-
-    document.body.onkeyup = () => {
-        checkWinner()
-    }
-
     function checkIfSomeHasWon() {
 
         if (time >= 30000) {
@@ -274,8 +291,8 @@ const Vinlotteri = function () {
         }
     }
 
-    function changeBackground(filename, opacity){
-        document.getElementById("background").src = backgroundRoot+filename
+    function changeBackground(filename, opacity) {
+        document.getElementById("background").src = backgroundRoot + filename
         document.getElementById("background").style.opacity = opacity
     }
 
@@ -289,38 +306,11 @@ const Vinlotteri = function () {
             document.body.onclick = null
 
             changeBackground("game.png", 0.3)
-            
+
             Runner.run(runner, engine);
             gameState = "playing"
         }
     }
-
-    setInterval(() => {
-
-        switch (gameState) {
-            case "start-screen":
-                showStartScreen();
-                break;
-
-            case "playing":
-                time += 100
-                onePlus = 1 + Math.pow(time / 6000, 2)
-                mixer.angle += 0.6 / onePlus
-                positionNose()
-    
-                moveAgainstWall()
-                checkWhoIsClosesedToNose()
-                checkIfSomeHasWon()
-                console.log(time)                
-                break;
-
-            case "player-has-won":
-                Runner.stop(runner, engine)
-                return                
-        }
-
-    }, 100)
-
 
 };
 
