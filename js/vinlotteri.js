@@ -7,69 +7,43 @@ const Vinlotteri = function () {
 
     // Kortare alias
 
-    const Engine = Matter.Engine,
+    const 
+        Engine = Matter.Engine,
         Render = Matter.Render,
         Runner = Matter.Runner,
+        Composite = Matter.Composite,
+        Bodies = Matter.Bodies,
+        Vector = Matter.Vector,        
         Composites = Matter.Composites,
         Common = Matter.Common,
         MouseConstraint = Matter.MouseConstraint,
         Mouse = Matter.Mouse,
-        Composite = Matter.Composite,
-        Bodies = Matter.Bodies,
-        Vector = Matter.Vector,
         Body = Matter.Body;
 
-    let gameState = "start-screen"
     const themeRoot = "./theme/boring/"
     const backgroundRoot = themeRoot + "background/"
-
     const boll = { diameter: 98, radius: 49 }
     const wall = { thickness: 20, diameter: 800, radius: 400 }
     const mixer = { diameter: 172, radius: 172 / 2, angle: 0 }
+
+    let gameState = "start-screen"
     let time = 0
-
-    // Setup av engine, värld, rendering, runner
-
-    const engine = Engine.create();
-    const world = engine.world;
-
-    const render = Render.create({
-        element: document.body,
-        engine: engine,
-        options: {
-            width: wall.diameter * 1.5,
-            height: wall.diameter * 1.5,
-            showAngleIndicator: false,
-            wireframes: false,
-            background: '#ffffff'
-        }
-    });
-
-    Render.run(render);
-
-    const runner = Runner.create();
-
-    setupWallOfCircles()
+    let closesedBall = null
+    let onePlus // ett tal som alltid är minst 1 och ökar under tiden time ökar
 
     addStylesheet(themeRoot + "style.css")
 
-    const { bollar, mixerBall, nose } = setupBalls()
+    const { engine, world, render, runner } = setupWorld()
 
-    positionNose()
+    setupWallOfCircles()
+
+    const { bollar, mixerBall, nose } = setupBalls()
 
     Matter.Sleeping.set(nose, true)
 
-    //Composite.add(world, nose)   // Kommentera för att gömma näsan    
+    Composite.add(world, nose)   // Kommentera för att gömma näsan    
 
     setViewport()
-
-    let closesedBall = null
-
-    let onePlus
-
-    document.body.onkeyup = () => {
-        checkWinner()
-    }
 
     setInterval(() => {
 
@@ -81,9 +55,9 @@ const Vinlotteri = function () {
             case "playing":
                 time += 100
                 onePlus = 1 + Math.pow(time / 6000, 2)
+                console.log(onePlus)
                 mixer.angle += 0.6 / onePlus
                 positionNose()
-
                 moveAgainstWall()
                 checkWhoIsClosesedToNose()
                 checkIfSomeHasWon()
@@ -95,7 +69,29 @@ const Vinlotteri = function () {
         }
 
     }, 100)
-    
+
+    function setupWorld() {
+
+        const engine = Engine.create();
+        const world = engine.world;
+
+        const render = Render.create({
+            element: document.body,
+            engine: engine,
+            options: {
+                width: wall.diameter * 1.5,
+                height: wall.diameter * 1.5,
+                showAngleIndicator: false,
+                wireframes: false,
+                background: '#ffffff'
+            }
+        });
+
+        Render.run(render);
+
+        const runner = Runner.create();
+        return { engine, world, render, runner }
+    }
     function addStylesheet(fileName) {
 
         var head = document.head;
@@ -108,8 +104,7 @@ const Vinlotteri = function () {
         head.appendChild(link);
     }
 
-    function createBoll(name) {
-        const t = wall.diameter / 2
+    function createBall(name) {
 
         const r = Math.random() * wall.radius - boll.radius;
         const angle = Math.random() * Math.PI * 2;
@@ -168,10 +163,10 @@ const Vinlotteri = function () {
         const bollar = []
 
         for (let i = 0; i < 7; i++) {
-            bollar.push(createBoll('oscar'))
-            bollar.push(createBoll('nils'))
-            bollar.push(createBoll('macke'))
-            bollar.push(createBoll('madde'))
+            bollar.push(createBall('oscar'))
+            bollar.push(createBall('nils'))
+            bollar.push(createBall('macke'))
+            bollar.push(createBall('madde'))
 
         }
         Composite.add(world, bollar);
@@ -279,10 +274,6 @@ const Vinlotteri = function () {
         closesedBall.render.opacity = 1
     }
 
-    function checkWinner() {
-        console.log(closesedBall.who)
-    }
-
     function checkIfSomeHasWon() {
 
         if (time >= 30000) {
@@ -302,7 +293,6 @@ const Vinlotteri = function () {
 
         document.body.onclick = () => {
 
-            console.log('Click')
             document.body.onclick = null
 
             changeBackground("game.png", 0.3)
