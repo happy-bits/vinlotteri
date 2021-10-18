@@ -1,4 +1,4 @@
-// todo: Ringa in vinnaren
+// todo: Kunna fortsätta spela efter en vinst
 // todo: Ljudeffekt när någon skjuts ut eller vinner
 // todo: Musik vid introskärmen
 
@@ -23,6 +23,7 @@ const Vinlotteri = function () {
 
     const themeRoot = "./theme/boring/"
     const backgroundRoot = themeRoot + "background/"
+    const miscRoot = themeRoot + "misc/"
     const boll = { diameter: 98, radius: 49 }
     const wall = { thickness: 20, diameter: 800, radius: 400 }
     const mixer = { diameter: 172, radius: 172 / 2, angle: 0 }
@@ -41,10 +42,9 @@ const Vinlotteri = function () {
 
     const { bollar, mixerBall, nose } = setupBalls()
 
-    Matter.Sleeping.set(nose, true)
+    const winnerBubble = setupWinnerBubble()
 
     noseShouldBeVisible(false)
- 
 
     setViewport()
 
@@ -66,12 +66,39 @@ const Vinlotteri = function () {
                 checkIfSomeHasWon()
                 break;
 
-            case "player-has-won":
+            case "player-has-just-won":
                 Runner.stop(runner, engine)
+                showCircleAroundWinner()
                 return
         }
 
     }, 100)
+
+    function setupWinnerBubble() {
+
+        const winnerBubble = Bodies.circle(0, 0, 150, 
+            {
+            render: {
+                sprite: {
+                    texture: `${miscRoot}winner.png`
+                }
+            }
+        }
+        
+        );
+        
+        Matter.Sleeping.set(winnerBubble, true)
+        return winnerBubble
+    }
+    
+    function showCircleAroundWinner() {
+        
+        winnerBubble.position.x = closesedBall.position.x
+        winnerBubble.position.y = closesedBall.position.y 
+        gameState = "winner-is-highlighted"
+        console.log("Winnner", closesedBall.extra.who)
+        Composite.add(world, winnerBubble)  
+    }
 
     function noseShouldBeVisible(visible) {
         if (visible) {
@@ -220,6 +247,8 @@ const Vinlotteri = function () {
             opacity: 0
         });
 
+        Matter.Sleeping.set(nose, true)
+
         return { bollar, mixerBall, nose }
     }
 
@@ -298,9 +327,9 @@ const Vinlotteri = function () {
 
     function checkIfSomeHasWon() {
 
-        if (time >= 30000) {
-            alert(closesedBall.extra.who)
-            gameState = "player-has-won"
+        if (time >= 1000) { // 30000 innan
+            
+            gameState = "player-has-just-won"
         }
     }
 
