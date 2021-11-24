@@ -20,7 +20,6 @@ const Vinlotteri = function () {
         MouseConstraint = Matter.MouseConstraint,
         Mouse = Matter.Mouse,
         Body = Matter.Body;
-
     const themeRoot = "./theme/boring/"
     const backgroundRoot = themeRoot + "background/"
     const miscRoot = themeRoot + "misc/"
@@ -56,7 +55,7 @@ const Vinlotteri = function () {
                 break;
 
             case "playing":
-                time += 100
+                time += 50
                 onePlus = 1 + Math.pow(time / 6000, 2)
                 mixer.angle += 0.6 / onePlus
 
@@ -72,7 +71,7 @@ const Vinlotteri = function () {
                 return
         }
 
-    }, 100)
+    }, 1000)
 
     function setupWinnerBubble() {
 
@@ -80,7 +79,7 @@ const Vinlotteri = function () {
             {
             render: {
                 sprite: {
-                    texture: `${miscRoot}winner.png`
+                    texture: `${miscRoot}winner.gif`
                 }
             }
         }
@@ -118,7 +117,7 @@ const Vinlotteri = function () {
                 height: wall.diameter * 1.5,
                 showAngleIndicator: false,
                 wireframes: false,
-                background: '#ffffff'
+                background: 'transparent'
             }
         });
 
@@ -346,7 +345,7 @@ const Vinlotteri = function () {
 
             document.body.onclick = null
 
-            changeBackground("game.png", 0.3)
+            changeBackground("game_2.png", 0.3)
 
             Runner.run(runner, engine);
             gameState = "playing"
